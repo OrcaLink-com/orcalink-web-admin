@@ -85,3 +85,47 @@ export interface Review {
   isHidden: boolean;
   createdAt: string;
 }
+
+// Observabilidade (admin vê orçamentos + conversas)
+export interface AdminQuoteListItem {
+  id: string;
+  clientName: string;
+  categoryName: string;
+  status: string;
+  description: string;
+  proposalsCount: number;
+  conversationsCount: number;
+  createdAt: string;
+  lastActivityAt: string;
+  waitingHours: number;
+}
+
+export interface AdminQuoteMessage {
+  id: string;
+  type: string;
+  body: string | null;
+  senderName: string | null;
+  senderRole: string | null;
+  createdAt: string;
+}
+
+export interface AdminQuoteConversation {
+  id: string;
+  providerName: string;
+  status: string;
+  proposalAmountCents: number | null;
+  messages: AdminQuoteMessage[];
+}
+
+export interface AdminQuoteDetail {
+  id: string;
+  clientName: string;
+  clientEmail: string | null;
+  clientPhone: string | null;
+  categoryName: string;
+  status: string;
+  description: string;
+  budgetMaxCents: number | null;
+  createdAt: string;
+  conversations: AdminQuoteConversation[];
+}

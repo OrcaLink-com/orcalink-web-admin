@@ -8,7 +8,21 @@ export const queryKeys = {
   categories: ['categories'] as const,
   payments: ['payments'] as const,
   reviews: ['reviews'] as const,
+  quotes: ['quotes'] as const,
+  quote: (id: string) => ['quote', id] as const,
 };
+
+export function useQuotes() {
+  return useQuery({ queryKey: queryKeys.quotes, queryFn: api.listQuotes });
+}
+
+export function useQuote(id: string | null) {
+  return useQuery({
+    queryKey: queryKeys.quote(id ?? ''),
+    queryFn: () => api.getQuote(id as string),
+    enabled: Boolean(id),
+  });
+}
 
 export function useReviews() {
   return useQuery({ queryKey: queryKeys.reviews, queryFn: api.listReviews });

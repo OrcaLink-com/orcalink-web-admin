@@ -1,11 +1,15 @@
 import { useMetrics } from '../../lib/queries';
 import { formatBRL } from '../../lib/format';
 
-function Card({ label, value }: { label: string; value: number | string }) {
+function Card({ label, value, accent }: { label: string; value: number | string; accent?: boolean }) {
   return (
-    <div className="rounded-lg border border-border bg-card p-4">
-      <p className="text-2xl font-bold">{value}</p>
-      <p className="text-sm text-text-muted">{label}</p>
+    <div
+      className={`rounded-large border bg-card p-4 shadow-card transition-colors hover:bg-card-2 ${
+        accent ? 'border-primary/40' : 'border-border'
+      }`}
+    >
+      <p className={`text-2xl font-bold ${accent ? 'text-primary' : ''}`}>{value}</p>
+      <p className="mt-0.5 text-sm text-text-muted">{label}</p>
     </div>
   );
 }
@@ -31,7 +35,10 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-semibold">Dashboard</h1>
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+        <p className="text-sm text-text-muted">Visão geral da operação.</p>
+      </div>
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <Card label="Clientes" value={m.clients} />
@@ -45,7 +52,7 @@ export function DashboardPage() {
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         <Card label="GMV" value={formatBRL(m.gmvCents)} />
         <Card label="Receita bruta" value={formatBRL(m.grossRevenueCents)} />
-        <Card label="Lucro líquido" value={formatBRL(m.netProfitCents)} />
+        <Card label="Lucro líquido" value={formatBRL(m.netProfitCents)} accent />
       </div>
 
       <div>

@@ -3,6 +3,7 @@ import { useAuth } from './auth/AuthContext';
 import { Layout } from './components/Layout';
 import { LoginPage } from './features/auth/LoginPage';
 import { DashboardPage } from './features/dashboard/DashboardPage';
+import { OperationsPage } from './features/operations/OperationsPage';
 import { ProvidersPage } from './features/providers/ProvidersPage';
 import { CategoriesPage } from './features/categories/CategoriesPage';
 import { FinancePage } from './features/finance/FinancePage';
@@ -23,6 +24,7 @@ export function App() {
     <Routes>
       <Route element={<Layout />}>
         <Route index element={<DashboardPage />} />
+        <Route path="operacoes" element={<OperationsPage />} />
         <Route path="prestadores" element={<ProvidersPage />} />
         <Route path="categorias" element={<CategoriesPage />} />
         <Route path="financeiro" element={<FinancePage />} />

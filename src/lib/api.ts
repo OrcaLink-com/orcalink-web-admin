@@ -1,5 +1,7 @@
 import type {
   AdminPayment,
+  AdminQuoteDetail,
+  AdminQuoteListItem,
   AuthUser,
   Category,
   InviteResult,
@@ -175,7 +177,17 @@ export const api = {
   createCategory(input: { slug: string; name: string; iconKey?: string; sortOrder?: number }) {
     return request<Category>('/admin/categories', body('POST', input));
   },
-  updateCategory(id: string, input: { name?: string; isActive?: boolean; sortOrder?: number }) {
+  updateCategory(
+    id: string,
+    input: { name?: string; isActive?: boolean; sortOrder?: number; iconKey?: string },
+  ) {
     return request<Category>(`/admin/categories/${id}`, body('PATCH', input));
+  },
+  // Observabilidade
+  listQuotes() {
+    return request<AdminQuoteListItem[]>('/admin/quotes');
+  },
+  getQuote(id: string) {
+    return request<AdminQuoteDetail>(`/admin/quotes/${id}`);
   },
 };

@@ -46,9 +46,17 @@ export function LoginPage() {
   }
 
   return (
-    <div className="mx-auto flex min-h-full max-w-sm flex-col justify-center px-6 py-10">
-      <h1 className="mb-1 text-center text-2xl font-bold text-brand">{brand.name} Admin</h1>
-      <p className="mb-8 text-center text-sm text-text-muted">Acesso restrito à equipe.</p>
+    <div className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center px-6 py-10">
+      <div className="rounded-large border border-border bg-card p-6 shadow-pop">
+        <div className="mb-6 flex flex-col items-center gap-3 text-center">
+          <img src="/brand/mark.svg" alt={brand.name} className="h-14 w-14" />
+          <div>
+            <p className="text-lg font-bold">
+              {brand.name} <span className="text-primary">Admin</span>
+            </p>
+            <p className="text-sm text-text-muted">Acesso restrito à equipe.</p>
+          </div>
+        </div>
       {step === 'request' ? (
         <form onSubmit={onRequest} className="space-y-4">
           <input
@@ -93,6 +101,7 @@ export function LoginPage() {
           </button>
         </form>
       )}
+      </div>
     </div>
   );
 }
