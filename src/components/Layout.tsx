@@ -29,7 +29,7 @@ export function Layout() {
       {/* Sidebar (desktop) */}
       <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-r border-border bg-background px-3 py-5 md:flex">
         <Link to="/" className="flex items-center gap-1.5 px-2" aria-label={`${brand.name} Admin`}>
-          <img src="/brand/logo.svg" alt={brand.name} className="h-7 w-auto" />
+          <img src="/brand/logo.svg" alt={brand.name} className="h-10 w-auto" />
           <span className="rounded bg-primary/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
             Admin
           </span>
@@ -59,7 +59,7 @@ export function Layout() {
         {/* Top bar (mobile) */}
         <header className="sticky top-0 z-20 flex items-center justify-between border-b border-border bg-background/90 px-4 py-3 backdrop-blur md:hidden">
           <Link to="/" aria-label={brand.name}>
-            <img src="/brand/logo.svg" alt={brand.name} className="h-7 w-auto" />
+            <img src="/brand/logo.svg" alt={brand.name} className="h-10 w-auto" />
           </Link>
           <button onClick={() => void logout()} aria-label="Sair" className="text-text-muted hover:text-danger">
             <LuLogOut size={18} />
