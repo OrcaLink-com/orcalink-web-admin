@@ -5,6 +5,7 @@ import {
   LuLayoutDashboard,
   LuActivity,
   LuUsers,
+  LuUserCog,
   LuTags,
   LuWallet,
   LuStar,
@@ -15,6 +16,7 @@ import { useAuth } from '../auth/AuthContext';
 const NAV = [
   { to: '/', label: 'Dashboard', icon: <LuLayoutDashboard size={19} />, end: true },
   { to: '/operacoes', label: 'Operações', icon: <LuActivity size={19} /> },
+  { to: '/usuarios', label: 'Usuários', icon: <LuUserCog size={19} /> },
   { to: '/prestadores', label: 'Prestadores', icon: <LuUsers size={19} /> },
   { to: '/categorias', label: 'Categorias', icon: <LuTags size={19} /> },
   { to: '/financeiro', label: 'Financeiro', icon: <LuWallet size={19} /> },

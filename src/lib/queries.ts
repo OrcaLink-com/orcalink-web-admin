@@ -10,7 +10,26 @@ export const queryKeys = {
   reviews: ['reviews'] as const,
   quotes: ['quotes'] as const,
   quote: (id: string) => ['quote', id] as const,
+  users: (q?: string, role?: string) => ['users', q ?? '', role ?? ''] as const,
 };
+
+export function useUsers(input: { q?: string; role?: string }) {
+  return useQuery({
+    queryKey: queryKeys.users(input.q, input.role),
+    queryFn: () => api.listUsers(input),
+  });
+}
+
+export function useUpdateUserRole() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (args: { id: string; role: 'CLIENT' | 'PROVIDER' | 'ADMIN' }) =>
+      api.updateUserRole(args.id, args.role),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['users'] });
+    },
+  });
+}
 
 export function useQuotes() {
   return useQuery({ queryKey: queryKeys.quotes, queryFn: api.listQuotes });

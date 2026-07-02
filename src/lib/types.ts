@@ -129,3 +129,17 @@ export interface AdminQuoteDetail {
   createdAt: string;
   conversations: AdminQuoteConversation[];
 }
+
+// Gerenciamento de usuários (admin)
+export interface AdminUser {
+  id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  role: Role;
+  isActive: boolean;
+  emailVerified: boolean;
+  phoneVerified: boolean;
+  providerStatus: string | null;
+  createdAt: string;
+}

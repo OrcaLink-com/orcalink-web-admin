@@ -2,6 +2,7 @@ import type {
   AdminPayment,
   AdminQuoteDetail,
   AdminQuoteListItem,
+  AdminUser,
   AuthUser,
   Category,
   InviteResult,
@@ -189,5 +190,16 @@ export const api = {
   },
   getQuote(id: string) {
     return request<AdminQuoteDetail>(`/admin/quotes/${id}`);
+  },
+  // Usuários
+  listUsers(input?: { q?: string; role?: string }) {
+    const qs = new URLSearchParams();
+    if (input?.q) qs.set('q', input.q);
+    if (input?.role) qs.set('role', input.role);
+    const s = qs.toString();
+    return request<AdminUser[]>(`/admin/users${s ? `?${s}` : ''}`);
+  },
+  updateUserRole(id: string, role: 'CLIENT' | 'PROVIDER' | 'ADMIN') {
+    return request<AdminUser>(`/admin/users/${id}/role`, body('PATCH', { role }));
   },
 };
