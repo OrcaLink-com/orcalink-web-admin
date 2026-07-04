@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from './api';
-import type { ProviderStatus } from './types';
+import type { ContactCategory, ContactStatus, ProviderStatus } from './types';
 
 export const queryKeys = {
   metrics: ['metrics'] as const,
@@ -11,7 +11,27 @@ export const queryKeys = {
   quotes: ['quotes'] as const,
   quote: (id: string) => ['quote', id] as const,
   users: (q?: string, role?: string) => ['users', q ?? '', role ?? ''] as const,
+  contacts: (status?: string, category?: string, q?: string) =>
+    ['contacts', status ?? '', category ?? '', q ?? ''] as const,
 };
+
+export function useContacts(input: { status?: ContactStatus; category?: ContactCategory; q?: string }) {
+  return useQuery({
+    queryKey: queryKeys.contacts(input.status, input.category, input.q),
+    queryFn: () => api.listContacts(input),
+  });
+}
+
+export function useUpdateContact() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (args: { id: string; status?: ContactStatus; adminNotes?: string }) =>
+      api.updateContact(args.id, { status: args.status, adminNotes: args.adminNotes }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['contacts'] });
+    },
+  });
+}
 
 export function useUsers(input: { q?: string; role?: string }) {
   return useQuery({

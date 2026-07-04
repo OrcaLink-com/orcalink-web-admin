@@ -9,6 +9,7 @@ import { ProvidersPage } from './features/providers/ProvidersPage';
 import { CategoriesPage } from './features/categories/CategoriesPage';
 import { FinancePage } from './features/finance/FinancePage';
 import { ReviewsPage } from './features/reviews/ReviewsPage';
+import { ContactsPage } from './features/contacts/ContactsPage';
 
 export function App() {
   const { isAuthenticated, isAdmin } = useAuth();
@@ -31,6 +32,7 @@ export function App() {
         <Route path="categorias" element={<CategoriesPage />} />
         <Route path="financeiro" element={<FinancePage />} />
         <Route path="avaliacoes" element={<ReviewsPage />} />
+        <Route path="contatos" element={<ContactsPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

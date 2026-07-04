@@ -9,6 +9,7 @@ import {
   LuTags,
   LuWallet,
   LuStar,
+  LuMessageSquare,
   LuLogOut,
 } from 'react-icons/lu';
 import { useAuth } from '../auth/AuthContext';
@@ -21,6 +22,7 @@ const NAV = [
   { to: '/categorias', label: 'Categorias', icon: <LuTags size={19} /> },
   { to: '/financeiro', label: 'Financeiro', icon: <LuWallet size={19} /> },
   { to: '/avaliacoes', label: 'Avaliações', icon: <LuStar size={19} /> },
+  { to: '/contatos', label: 'Contatos', icon: <LuMessageSquare size={19} /> },
 ];
 
 export function Layout() {

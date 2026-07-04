@@ -1,5 +1,23 @@
 export type Role = 'CLIENT' | 'PROVIDER' | 'ADMIN' | 'SUPER_ADMIN';
 export type OtpChannel = 'EMAIL' | 'PHONE';
+
+// Canal de contato (suporte)
+export type ContactCategory = 'DUVIDA' | 'SUPORTE' | 'SUGESTAO' | 'PROBLEMA' | 'FINANCEIRO' | 'COMERCIAL' | 'OUTRO';
+export type ContactStatus = 'NEW' | 'IN_PROGRESS' | 'ANSWERED' | 'ARCHIVED';
+
+export interface ContactMessage {
+  id: string;
+  userId: string | null;
+  name: string;
+  email: string;
+  subject: string;
+  category: ContactCategory;
+  message: string;
+  status: ContactStatus;
+  adminNotes: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
 export type ProviderStatus =
   | 'INVITED'
   | 'PENDING_APPROVAL'

@@ -5,6 +5,9 @@ import type {
   AdminUser,
   AuthUser,
   Category,
+  ContactCategory,
+  ContactMessage,
+  ContactStatus,
   InviteResult,
   Metrics,
   OtpChannel,
@@ -201,5 +204,17 @@ export const api = {
   },
   updateUserRole(id: string, role: 'CLIENT' | 'PROVIDER' | 'ADMIN') {
     return request<AdminUser>(`/admin/users/${id}/role`, body('PATCH', { role }));
+  },
+  // Contatos (suporte)
+  listContacts(input?: { status?: ContactStatus; category?: ContactCategory; q?: string }) {
+    const qs = new URLSearchParams();
+    if (input?.status) qs.set('status', input.status);
+    if (input?.category) qs.set('category', input.category);
+    if (input?.q) qs.set('q', input.q);
+    const s = qs.toString();
+    return request<ContactMessage[]>(`/admin/contacts${s ? `?${s}` : ''}`);
+  },
+  updateContact(id: string, input: { status?: ContactStatus; adminNotes?: string }) {
+    return request<ContactMessage>(`/admin/contacts/${id}`, body('PATCH', input));
   },
 };
