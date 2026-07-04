@@ -109,6 +109,7 @@ export interface AdminQuoteListItem {
   id: string;
   clientName: string;
   categoryName: string;
+  title: string | null;
   status: string;
   description: string;
   proposalsCount: number;
@@ -141,6 +142,7 @@ export interface AdminQuoteDetail {
   clientEmail: string | null;
   clientPhone: string | null;
   categoryName: string;
+  title: string | null;
   status: string;
   description: string;
   budgetMaxCents: number | null;

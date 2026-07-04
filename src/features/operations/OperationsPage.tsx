@@ -88,7 +88,7 @@ export function OperationsPage() {
                   }`}
                 >
                   <div className="mb-1 flex items-center justify-between gap-2">
-                    <span className="font-semibold">{q.categoryName}</span>
+                    <span className="truncate font-semibold">{q.title ?? q.categoryName}</span>
                     <span className={`text-xs font-medium ${stuck ? 'text-warning' : 'text-text-muted'}`}>
                       {fmtWait(q.waitingHours)} esperando
                     </span>
@@ -148,7 +148,7 @@ function QuoteDetail({ id, onClose }: { id: string; onClose: () => void }) {
     <div className="space-y-4 rounded-large border border-border bg-card p-4 shadow-card">
       <div className="flex items-start justify-between gap-2">
         <div>
-          <h2 className="text-lg font-bold">{q.categoryName}</h2>
+          <h2 className="text-lg font-bold">{q.title ?? q.categoryName}</h2>
           <p className="text-sm text-text-muted">
             {q.clientName}
             {q.clientEmail ? ` · ${q.clientEmail}` : ''}
