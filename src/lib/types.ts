@@ -148,6 +148,19 @@ export interface AdminQuoteDetail {
   conversations: AdminQuoteConversation[];
 }
 
+// Mediação — serviços marcados como concluídos pelo prestador (aguardando confirmação)
+export interface Mediation {
+  quoteId: string;
+  clientName: string;
+  providerName: string;
+  categoryName: string;
+  description: string;
+  providerNetCents: number;
+  status: string;
+  providerDoneAt: string;
+  createdAt: string;
+}
+
 // Gerenciamento de usuários (admin)
 export interface AdminUser {
   id: string;

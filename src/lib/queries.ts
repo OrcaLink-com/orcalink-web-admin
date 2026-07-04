@@ -15,6 +15,20 @@ export const queryKeys = {
     ['contacts', status ?? '', category ?? '', q ?? ''] as const,
 };
 
+export function useMediations() {
+  return useQuery({ queryKey: ['mediations'] as const, queryFn: api.listMediations });
+}
+
+export function useReleaseQuote() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.releaseQuote(id),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['mediations'] });
+    },
+  });
+}
+
 export function useContacts(input: { status?: ContactStatus; category?: ContactCategory; q?: string }) {
   return useQuery({
     queryKey: queryKeys.contacts(input.status, input.category, input.q),

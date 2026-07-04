@@ -9,6 +9,7 @@ import type {
   ContactMessage,
   ContactStatus,
   InviteResult,
+  Mediation,
   Metrics,
   OtpChannel,
   ProviderItem,
@@ -204,6 +205,13 @@ export const api = {
   },
   updateUserRole(id: string, role: 'CLIENT' | 'PROVIDER' | 'ADMIN') {
     return request<AdminUser>(`/admin/users/${id}/role`, body('PATCH', { role }));
+  },
+  // Mediação (serviços marcados como concluídos pelo prestador)
+  listMediations() {
+    return request<Mediation[]>('/admin/mediations');
+  },
+  releaseQuote(id: string) {
+    return request<{ status: string }>(`/admin/quotes/${id}/release`, { method: 'POST' });
   },
   // Contatos (suporte)
   listContacts(input?: { status?: ContactStatus; category?: ContactCategory; q?: string }) {
