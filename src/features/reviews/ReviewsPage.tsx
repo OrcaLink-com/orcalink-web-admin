@@ -1,4 +1,16 @@
+import { LuStar } from 'react-icons/lu';
 import { useModerateReview, useReviews } from '../../lib/queries';
+import { PageHeader, Card, Button, Badge, Spinner, ErrorState, EmptyState } from '../../components/ui';
+
+function Stars({ rating }: { rating: number }) {
+  return (
+    <span className="inline-flex items-center gap-0.5 text-warning">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <LuStar key={i} size={15} className={i < rating ? 'fill-current' : 'text-border'} />
+      ))}
+    </span>
+  );
+}
 
 export function ReviewsPage() {
   const { data, isLoading, isError, error } = useReviews();
@@ -6,36 +18,30 @@ export function ReviewsPage() {
 
   return (
     <div className="space-y-5">
-      <h1 className="text-xl font-semibold">Avaliações</h1>
+      <PageHeader title="Avaliações" subtitle="Modere avaliações impróprias sem apagar o histórico." />
 
-      {isLoading && <p className="text-text-muted">Carregando…</p>}
-      {isError && <p className="text-danger">{(error as Error).message}</p>}
+      {isLoading && <Spinner />}
+      {isError && <ErrorState message={(error as Error).message} />}
 
       {data && (
-        <ul className="space-y-3">
+        <div className="space-y-3">
           {data.map((r) => (
-            <li
-              key={r.id}
-              className={`rounded-lg border p-3 ${r.isHidden ? 'border-border bg-card opacity-60' : 'border-border'}`}
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-warning">{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</span>
-                <button
-                  onClick={() => moderate.mutate({ id: r.id, isHidden: !r.isHidden })}
-                  className="rounded border border-border px-2 py-1 text-xs"
-                >
+            <Card key={r.id} className={`p-4 ${r.isHidden ? 'opacity-60' : ''}`}>
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <Stars rating={r.rating} />
+                  {r.isHidden && <Badge tone="danger">Oculta</Badge>}
+                </div>
+                <Button variant="secondary" size="sm" onClick={() => moderate.mutate({ id: r.id, isHidden: !r.isHidden })}>
                   {r.isHidden ? 'Reexibir' : 'Ocultar'}
-                </button>
+                </Button>
               </div>
-              {r.comment && <p className="mt-1 text-sm">{r.comment}</p>}
-              <p className="mt-1 text-xs text-text-muted">
-                por {r.authorName}
-                {r.isHidden && ' · oculta'}
-              </p>
-            </li>
+              {r.comment && <p className="mt-2 text-sm">{r.comment}</p>}
+              <p className="mt-1 text-xs text-text-muted">por {r.authorName}</p>
+            </Card>
           ))}
-          {data.length === 0 && <li className="text-text-muted">Nenhuma avaliação ainda.</li>}
-        </ul>
+          {data.length === 0 && <EmptyState icon={<LuStar size={26} />} title="Nenhuma avaliação ainda" />}
+        </div>
       )}
     </div>
   );

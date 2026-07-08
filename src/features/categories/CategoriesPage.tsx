@@ -3,21 +3,28 @@ import { useCategories, useCategoryMutation } from '../../lib/queries';
 import { api } from '../../lib/api';
 import type { Category } from '../../lib/types';
 import { CategoryIcon, ICON_OPTIONS } from '../../lib/categoryIcons';
+import {
+  PageHeader,
+  Card,
+  Button,
+  Input,
+  Badge,
+  Spinner,
+  ErrorState,
+  InlineError,
+} from '../../components/ui';
 
 export function CategoriesPage() {
   const { data, isLoading, isError, error } = useCategories();
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Categorias</h1>
-        <p className="text-sm text-text-muted">Serviços disponíveis e seus ícones.</p>
-      </div>
+      <PageHeader title="Categorias" subtitle="Serviços disponíveis e seus ícones." />
 
       <CategoryCreator />
 
-      {isLoading && <p className="text-text-muted">Carregando…</p>}
-      {isError && <p className="text-danger">{(error as Error).message}</p>}
+      {isLoading && <Spinner />}
+      {isError && <ErrorState message={(error as Error).message} />}
 
       {data && (
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
@@ -30,7 +37,6 @@ export function CategoriesPage() {
   );
 }
 
-/** Grade de ícones selecionáveis. */
 function IconPicker({ value, onSelect }: { value: string | null; onSelect: (key: string) => void }) {
   return (
     <div className="grid grid-cols-6 gap-1.5 sm:grid-cols-10">
@@ -63,7 +69,7 @@ function CategoryCard({ category }: { category: Category }) {
   );
 
   return (
-    <div className="rounded-large border border-border bg-card p-4 shadow-card">
+    <Card className="p-4">
       <div className="flex items-center gap-3">
         <button
           onClick={() => setEditing((v) => !v)}
@@ -76,13 +82,7 @@ function CategoryCard({ category }: { category: Category }) {
           <p className="truncate font-semibold">{category.name}</p>
           <p className="truncate text-xs text-text-muted">{category.slug}</p>
         </div>
-        <span
-          className={`rounded px-2 py-0.5 text-xs text-white ${
-            category.isActive ? 'bg-status-finished' : 'bg-status-canceled'
-          }`}
-        >
-          {category.isActive ? 'Ativa' : 'Inativa'}
-        </span>
+        <Badge tone={category.isActive ? 'success' : 'neutral'}>{category.isActive ? 'Ativa' : 'Inativa'}</Badge>
       </div>
 
       {editing && (
@@ -100,14 +100,11 @@ function CategoryCard({ category }: { category: Category }) {
 
       <div className="mt-3 flex items-center justify-between">
         <span className="text-xs text-text-muted">Ordem {category.sortOrder}</span>
-        <button
-          onClick={() => toggle.mutate({ id: category.id, isActive: !category.isActive })}
-          className="rounded-medium border border-border px-2.5 py-1 text-xs hover:bg-card-2"
-        >
+        <Button variant="secondary" size="sm" onClick={() => toggle.mutate({ id: category.id, isActive: !category.isActive })}>
           {category.isActive ? 'Desativar' : 'Ativar'}
-        </button>
+        </Button>
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -116,9 +113,7 @@ function CategoryCreator() {
   const [slug, setSlug] = useState('');
   const [iconKey, setIconKey] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const create = useCategoryMutation((args: { slug: string; name: string; iconKey?: string }) =>
-    api.createCategory(args),
-  );
+  const create = useCategoryMutation((args: { slug: string; name: string; iconKey?: string }) => api.createCategory(args));
 
   async function onCreate(e: React.FormEvent) {
     e.preventDefault();
@@ -134,42 +129,31 @@ function CategoryCreator() {
   }
 
   return (
-    <div className="rounded-large border border-border bg-card p-4 shadow-card">
+    <Card className="p-4">
       <h2 className="mb-3 font-semibold">Nova categoria</h2>
       <form onSubmit={onCreate} className="space-y-3">
         <div className="flex flex-wrap gap-2">
-          <input
+          <Input
             required
             value={name}
             onChange={(e) => {
               setName(e.target.value);
-              if (!slug)
-                setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''));
+              if (!slug) setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''));
             }}
             placeholder="Nome (ex.: Jardinagem)"
-            className="flex-1 rounded-medium border border-border bg-bg px-3 py-2"
+            className="min-w-56 flex-1"
           />
-          <input
-            required
-            value={slug}
-            onChange={(e) => setSlug(e.target.value)}
-            placeholder="slug"
-            className="w-40 rounded-medium border border-border bg-bg px-3 py-2"
-          />
+          <Input required value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="slug" className="w-40" />
         </div>
         <div>
           <p className="mb-2 text-xs font-medium text-text-muted">Ícone</p>
           <IconPicker value={iconKey} onSelect={setIconKey} />
         </div>
-        <button
-          type="submit"
-          disabled={create.isPending}
-          className="rounded-medium bg-primary px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
-        >
-          {create.isPending ? 'Criando…' : 'Criar categoria'}
-        </button>
+        <Button type="submit" loading={create.isPending}>
+          Criar categoria
+        </Button>
       </form>
-      {error && <p className="mt-2 text-sm text-danger">{error}</p>}
-    </div>
+      <InlineError message={error} />
+    </Card>
   );
 }

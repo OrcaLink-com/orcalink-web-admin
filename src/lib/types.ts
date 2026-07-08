@@ -43,12 +43,21 @@ export interface Metrics {
   providersTotal: number;
   providersApproved: number;
   providersPending: number;
+  providersActive: number;
   quotesTotal: number;
   quotesByStatus: Record<string, number>;
   proposalsTotal: number;
+  answeredQuotes: number;
+  paidCount: number;
+  finishedCount: number;
+  avgFirstProposalHours: number | null;
+  newClients30d: number;
+  newProviders30d: number;
+  newQuotes30d: number;
   gmvCents: number;
   grossRevenueCents: number;
   netProfitCents: number;
+  gmvMonthly: { month: string; gmvCents: number }[];
 }
 
 export interface AdminPayment {

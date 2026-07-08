@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useQuotes, useQuote } from '../../lib/queries';
 import { formatBRL } from '../../lib/format';
 import type { AdminQuoteConversation } from '../../lib/types';
+import { PageHeader, FilterChip, Badge, Spinner, ErrorState } from '../../components/ui';
 
 const STATUS_LABELS: Record<string, string> = {
   CREATED: 'Criado',
@@ -45,17 +46,12 @@ export function OperationsPage() {
     (q) => WAITING_STATUSES.has(q.status) && q.waitingHours >= STUCK_HOURS,
   ).length;
 
-  if (isLoading) return <p className="text-text-muted">Carregando orçamentos…</p>;
-  if (isError) return <p className="text-danger">{(error as Error).message}</p>;
+  if (isLoading) return <Spinner label="Carregando orçamentos…" />;
+  if (isError) return <ErrorState message={(error as Error).message} />;
 
   return (
     <div className="space-y-5">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Operações</h1>
-        <p className="text-sm text-text-muted">
-          Acompanhe orçamentos, tempo de espera e as conversas de cada proposta.
-        </p>
-      </div>
+      <PageHeader title="Operações" subtitle="Orçamentos, tempo de espera e as conversas de cada proposta." />
 
       {stuckCount > 0 && (
         <div className="rounded-large border border-warning/40 bg-warning/10 px-4 py-3 text-sm text-warning">
@@ -95,9 +91,7 @@ export function OperationsPage() {
                   </div>
                   <p className="line-clamp-2 text-sm text-text-muted">{q.description}</p>
                   <div className="mt-2 flex items-center gap-2 text-xs text-text-muted">
-                    <span className="rounded bg-primary/15 px-1.5 py-0.5 text-primary">
-                      {STATUS_LABELS[q.status] ?? q.status}
-                    </span>
+                    <Badge tone="primary">{STATUS_LABELS[q.status] ?? q.status}</Badge>
                     <span>· {q.clientName}</span>
                     <span>· {q.proposalsCount} prop.</span>
                     <span>· {q.conversationsCount} conv.</span>
@@ -121,19 +115,6 @@ export function OperationsPage() {
         </div>
       </div>
     </div>
-  );
-}
-
-function FilterChip({ active, onClick, label, count }: { active: boolean; onClick: () => void; label: string; count: number }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${
-        active ? 'border-primary bg-primary/15 text-primary' : 'border-border text-text-muted hover:bg-card-2'
-      }`}
-    >
-      {label} <span className="opacity-70">{count}</span>
-    </button>
   );
 }
 
@@ -163,7 +144,7 @@ function QuoteDetail({ id, onClose }: { id: string; onClose: () => void }) {
       <div className="rounded-medium bg-bg p-3 text-sm">
         <p className="whitespace-pre-wrap">{q.description}</p>
         <div className="mt-2 flex flex-wrap gap-3 text-xs text-text-muted">
-          <span className="rounded bg-primary/15 px-1.5 py-0.5 text-primary">{STATUS_LABELS[q.status] ?? q.status}</span>
+          <Badge tone="primary">{STATUS_LABELS[q.status] ?? q.status}</Badge>
           {q.budgetMaxCents != null && <span>Teto: {formatBRL(q.budgetMaxCents)}</span>}
           <span>Criado em {new Date(q.createdAt).toLocaleString('pt-BR')}</span>
         </div>
@@ -195,11 +176,7 @@ function ConversationBlock({ conversation: c }: { conversation: AdminQuoteConver
       >
         <span className="font-medium">{c.providerName}</span>
         <span className="flex items-center gap-2 text-xs text-text-muted">
-          {c.proposalAmountCents != null && (
-            <span className="rounded bg-status-finished/20 px-1.5 py-0.5 text-status-finished">
-              {formatBRL(c.proposalAmountCents)}
-            </span>
-          )}
+          {c.proposalAmountCents != null && <Badge tone="success">{formatBRL(c.proposalAmountCents)}</Badge>}
           {c.messages.length} msg · {open ? '▲' : '▼'}
         </span>
       </button>

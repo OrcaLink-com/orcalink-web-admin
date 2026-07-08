@@ -2,9 +2,21 @@ import { useEffect, useMemo, useState } from 'react';
 import { useUsers, useUpdateUserRole } from '../../lib/queries';
 import { useAuth } from '../../auth/AuthContext';
 import type { AdminUser, Role } from '../../lib/types';
+import {
+  PageHeader,
+  Card,
+  Input,
+  Select,
+  FilterChip,
+  Badge,
+  Spinner,
+  ErrorState,
+  EmptyState,
+  InlineError,
+} from '../../components/ui';
 
 const ROLE_META: Record<Role, { label: string; className: string }> = {
-  CLIENT: { label: 'Cliente', className: 'bg-content2 text-text-muted' },
+  CLIENT: { label: 'Cliente', className: 'bg-card-2 text-text-muted' },
   PROVIDER: { label: 'Prestador', className: 'bg-sky-500/15 text-sky-300' },
   ADMIN: { label: 'Admin', className: 'bg-amber-500/15 text-amber-300' },
   SUPER_ADMIN: { label: 'Super Admin', className: 'bg-violet-500/15 text-violet-300' },
@@ -45,40 +57,22 @@ export function UsersPage() {
 
   return (
     <div className="space-y-5">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Usuários</h1>
-        <p className="text-sm text-text-muted">
-          Gerencie acessos e permissões sem mexer no banco.
-          {!canManage && ' (Alterar papéis é restrito ao Super Admin.)'}
-        </p>
-      </div>
+      <PageHeader
+        title="Usuários"
+        subtitle={`Acessos e permissões.${!canManage ? ' Alterar papéis é restrito ao Super Admin.' : ''}`}
+      />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Buscar por nome, e-mail ou telefone…"
-          className="h-10 flex-1 rounded-medium border border-border bg-content1 px-3 text-sm outline-none focus:border-primary"
-        />
+        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar por nome, e-mail ou telefone…" className="flex-1" />
         <div className="flex gap-2">
           {FILTERS.map((f) => (
-            <button
-              key={f.key}
-              onClick={() => setRole(f.key)}
-              className={`rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${
-                role === f.key
-                  ? 'border-primary bg-primary/15 text-primary'
-                  : 'border-border text-text-muted hover:bg-card-2'
-              }`}
-            >
-              {f.label}
-            </button>
+            <FilterChip key={f.key} active={role === f.key} onClick={() => setRole(f.key)} label={f.label} />
           ))}
         </div>
       </div>
 
-      {isLoading && <p className="text-text-muted">Carregando…</p>}
-      {isError && <p className="text-danger">{(error as Error).message}</p>}
+      {isLoading && <Spinner />}
+      {isError && <ErrorState message={(error as Error).message} />}
 
       {data && (
         <>
@@ -89,10 +83,8 @@ export function UsersPage() {
             {data.map((u) => (
               <UserCard key={u.id} user={u} canManage={canManage} isSelf={u.id === user?.id} />
             ))}
-            {data.length === 0 && (
-              <p className="py-8 text-center text-sm text-text-muted">Nenhum usuário encontrado.</p>
-            )}
           </div>
+          {data.length === 0 && <EmptyState title="Nenhum usuário encontrado." />}
         </>
       )}
     </div>
@@ -105,7 +97,7 @@ function UserCard({ user: u, canManage, isSelf }: { user: AdminUser; canManage: 
   const locked = u.role === 'SUPER_ADMIN' || isSelf;
 
   return (
-    <div className="rounded-large border border-border bg-card p-4 shadow-card">
+    <Card className="p-4">
       <div className="flex items-start gap-3">
         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/15 text-sm font-bold text-primary">
           {u.name.charAt(0).toUpperCase()}
@@ -113,14 +105,8 @@ function UserCard({ user: u, canManage, isSelf }: { user: AdminUser; canManage: 
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <p className="truncate font-semibold">{u.name}</p>
-            <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${meta.className}`}>
-              {meta.label}
-            </span>
-            {!u.isActive && (
-              <span className="shrink-0 rounded-full bg-danger/15 px-2 py-0.5 text-[11px] font-semibold text-danger">
-                Inativo
-              </span>
-            )}
+            <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold ${meta.className}`}>{meta.label}</span>
+            {!u.isActive && <Badge tone="danger">Inativo</Badge>}
           </div>
           <p className="truncate text-sm text-text-muted">{u.email ?? u.phone ?? '—'}</p>
           <div className="mt-1 flex flex-wrap gap-x-3 text-xs text-text-muted">
@@ -135,28 +121,21 @@ function UserCard({ user: u, canManage, isSelf }: { user: AdminUser; canManage: 
         <div className="mt-3 flex items-center justify-between gap-2 border-t border-border pt-3">
           <span className="text-xs text-text-muted">Papel</span>
           {locked ? (
-            <span className="text-xs text-text-muted">
-              {isSelf ? 'Você' : 'Protegido'}
-            </span>
+            <span className="text-xs text-text-muted">{isSelf ? 'Você' : 'Protegido'}</span>
           ) : (
-            <select
+            <Select
               value={u.role}
               disabled={setRole.isPending}
-              onChange={(e) =>
-                setRole.mutate({ id: u.id, role: e.target.value as 'CLIENT' | 'PROVIDER' | 'ADMIN' })
-              }
-              className="rounded-medium border border-border bg-bg px-2 py-1.5 text-sm outline-none focus:border-primary disabled:opacity-50"
+              onChange={(e) => setRole.mutate({ id: u.id, role: e.target.value as 'CLIENT' | 'PROVIDER' | 'ADMIN' })}
             >
               <option value="CLIENT">Cliente</option>
               <option value="PROVIDER">Prestador</option>
               <option value="ADMIN">Admin</option>
-            </select>
+            </Select>
           )}
         </div>
       )}
-      {setRole.isError && (
-        <p className="mt-1 text-xs text-danger">{(setRole.error as Error).message}</p>
-      )}
-    </div>
+      <InlineError message={setRole.isError ? (setRole.error as Error).message : null} />
+    </Card>
   );
 }

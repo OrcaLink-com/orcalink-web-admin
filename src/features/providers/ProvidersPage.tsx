@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { LuTicket } from 'react-icons/lu';
 import {
   useApproveProvider,
   useCreateRecebedor,
@@ -9,6 +10,25 @@ import {
 import { api } from '../../lib/api';
 import { bpsToPercent } from '../../lib/format';
 import type { ProviderItem, ProviderStatus } from '../../lib/types';
+import {
+  PageHeader,
+  Card,
+  Button,
+  Badge,
+  providerStatusTone,
+  FilterChip,
+  Table,
+  THead,
+  TBody,
+  TR,
+  TH,
+  TD,
+  EmptyRow,
+  Input,
+  Spinner,
+  ErrorState,
+  InlineError,
+} from '../../components/ui';
 
 const FILTERS: { label: string; value?: ProviderStatus }[] = [
   { label: 'Todos', value: undefined },
@@ -17,12 +37,12 @@ const FILTERS: { label: string; value?: ProviderStatus }[] = [
   { label: 'Rejeitados', value: 'REJECTED' },
 ];
 
-const statusColor: Record<ProviderStatus, string> = {
-  INVITED: 'bg-status-canceled',
-  PENDING_APPROVAL: 'bg-status-waiting',
-  APPROVED: 'bg-status-finished',
-  REJECTED: 'bg-danger',
-  SUSPENDED: 'bg-status-canceled',
+const STATUS_LABEL: Record<ProviderStatus, string> = {
+  INVITED: 'Convidado',
+  PENDING_APPROVAL: 'Pendente',
+  APPROVED: 'Aprovado',
+  REJECTED: 'Rejeitado',
+  SUSPENDED: 'Suspenso',
 };
 
 export function ProvidersPage() {
@@ -31,54 +51,38 @@ export function ProvidersPage() {
 
   return (
     <div className="space-y-5">
-      <h1 className="text-xl font-semibold">Prestadores</h1>
+      <PageHeader title="Prestadores" subtitle="Curadoria, comissão e recebedor no gateway." />
 
       <InviteCreator />
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         {FILTERS.map((f) => (
-          <button
-            key={f.label}
-            onClick={() => setFilter(f.value)}
-            className={`rounded-md border px-3 py-1.5 text-sm ${
-              filter === f.value ? 'border-brand bg-brand text-white' : 'border-border'
-            }`}
-          >
-            {f.label}
-          </button>
+          <FilterChip key={f.label} active={filter === f.value} onClick={() => setFilter(f.value)} label={f.label} count={filter === f.value ? data?.length : undefined} />
         ))}
       </div>
 
-      {isLoading && <p className="text-text-muted">Carregando…</p>}
-      {isError && <p className="text-danger">{(error as Error).message}</p>}
+      {isLoading && <Spinner />}
+      {isError && <ErrorState message={(error as Error).message} />}
 
       {data && (
-        <div className="overflow-x-auto rounded-lg border border-border">
-          <table className="w-full text-sm">
-            <thead className="bg-card text-left text-text-muted">
-              <tr>
-                <th className="px-3 py-2">Nome</th>
-                <th className="px-3 py-2">E-mail</th>
-                <th className="px-3 py-2">Status</th>
-                <th className="px-3 py-2">Comissão</th>
-                <th className="px-3 py-2">Recebedor</th>
-                <th className="px-3 py-2">Ações</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {data.map((p) => (
-                <ProviderRow key={p.id} provider={p} />
-              ))}
-              {data.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="px-3 py-4 text-center text-text-muted">
-                    Nenhum prestador.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+        <Table>
+          <THead>
+            <TR>
+              <TH>Nome</TH>
+              <TH>E-mail</TH>
+              <TH>Status</TH>
+              <TH>Comissão</TH>
+              <TH>Recebedor</TH>
+              <TH className="text-right">Ações</TH>
+            </TR>
+          </THead>
+          <TBody>
+            {data.map((p) => (
+              <ProviderRow key={p.id} provider={p} />
+            ))}
+            {data.length === 0 && <EmptyRow colSpan={6}>Nenhum prestador.</EmptyRow>}
+          </TBody>
+        </Table>
       )}
     </div>
   );
@@ -101,24 +105,17 @@ function ProviderRow({ provider }: { provider: ProviderItem }) {
   }
 
   return (
-    <tr>
-      <td className="px-3 py-2 font-medium">{provider.name}</td>
-      <td className="px-3 py-2 text-text-muted">{provider.email ?? '—'}</td>
-      <td className="px-3 py-2">
-        <span className={`rounded px-2 py-0.5 text-xs text-white ${statusColor[provider.status]}`}>
-          {provider.status}
-        </span>
-      </td>
-      <td className="px-3 py-2">
+    <TR>
+      <TD className="font-medium">{provider.name}</TD>
+      <TD className="text-text-muted">{provider.email ?? '—'}</TD>
+      <TD>
+        <Badge tone={providerStatusTone(provider.status)}>{STATUS_LABEL[provider.status]}</Badge>
+      </TD>
+      <TD>
         {editing ? (
           <span className="flex items-center gap-1">
-            <input
-              value={percent}
-              onChange={(e) => setPercent(e.target.value)}
-              className="w-16 rounded border border-border px-1 py-0.5"
-            />
-            %
-            <button onClick={save} className="ml-1 text-xs text-brand underline">
+            <Input value={percent} onChange={(e) => setPercent(e.target.value)} className="w-16 px-2 py-1" />%
+            <button onClick={save} className="ml-1 text-xs text-primary underline">
               salvar
             </button>
           </span>
@@ -127,44 +124,37 @@ function ProviderRow({ provider }: { provider: ProviderItem }) {
             {bpsToPercent(provider.commissionBps)}%
           </button>
         )}
-      </td>
-      <td className="px-3 py-2">
+      </TD>
+      <TD>
         {provider.asaasWalletId ? (
-          <span className="text-xs text-status-finished" title={provider.asaasWalletId}>
-            ✓ ativo
-          </span>
+          <Badge tone="success">ativo</Badge>
         ) : (
-          <button
+          <Button
+            variant="secondary"
+            size="sm"
             onClick={() => recebedor.mutate(provider.id)}
-            disabled={recebedor.isPending || provider.status !== 'APPROVED'}
-            className="rounded border border-border px-2 py-1 text-xs disabled:opacity-40"
-            title="Cria a subconta (recebedor) no gateway"
+            loading={recebedor.isPending}
+            disabled={provider.status !== 'APPROVED'}
           >
-            {recebedor.isPending ? '…' : 'Criar'}
-          </button>
+            Criar
+          </Button>
         )}
-      </td>
-      <td className="px-3 py-2">
-        <div className="flex gap-2">
+      </TD>
+      <TD>
+        <div className="flex justify-end gap-2">
           {provider.status !== 'APPROVED' && (
-            <button
-              onClick={() => approve.mutate(provider.id)}
-              className="rounded bg-status-finished px-2 py-1 text-xs text-white"
-            >
+            <Button size="sm" onClick={() => approve.mutate(provider.id)}>
               Aprovar
-            </button>
+            </Button>
           )}
           {provider.status !== 'REJECTED' && (
-            <button
-              onClick={() => reject.mutate(provider.id)}
-              className="rounded border border-border px-2 py-1 text-xs"
-            >
+            <Button variant="secondary" size="sm" onClick={() => reject.mutate(provider.id)}>
               Rejeitar
-            </button>
+            </Button>
           )}
         </div>
-      </td>
-    </tr>
+      </TD>
+    </TR>
   );
 }
 
@@ -191,32 +181,30 @@ function InviteCreator() {
   }
 
   return (
-    <div className="rounded-lg border border-border bg-card p-4">
-      <h2 className="mb-2 font-medium">Convidar prestador</h2>
-      <form onSubmit={onCreate} className="flex gap-2">
-        <input
+    <Card className="p-4">
+      <h2 className="mb-2 flex items-center gap-2 font-semibold">
+        <LuTicket size={16} className="text-primary" /> Convidar prestador
+      </h2>
+      <form onSubmit={onCreate} className="flex flex-wrap gap-2">
+        <Input
           type="email"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="email@profissional.com"
-          className="flex-1 rounded-md border border-border bg-bg px-3 py-2"
+          className="min-w-56 flex-1"
         />
-        <button
-          type="submit"
-          disabled={loading}
-          className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
-        >
+        <Button type="submit" loading={loading}>
           Gerar convite
-        </button>
+        </Button>
       </form>
-      {error && <p className="mt-2 text-sm text-danger">{error}</p>}
+      <InlineError message={error} />
       {result && (
-        <div className="mt-2 break-all rounded-md bg-bg p-2 text-xs">
+        <div className="mt-2 break-all rounded-medium bg-card-2 p-2 text-xs">
           <span className="text-text-muted">Link do convite: </span>
           <code>{result}</code>
         </div>
       )}
-    </div>
+    </Card>
   );
 }

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { brand } from '@orcalink/design-tokens/brand.config';
 import { useAuth } from '../../auth/AuthContext';
+import { Card, Input, Button, InlineError } from '../../components/ui';
 
 export function LoginPage() {
   const { requestOtp, verifyOtp, logout } = useAuth();
@@ -47,7 +48,7 @@ export function LoginPage() {
 
   return (
     <div className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center px-6 py-10">
-      <div className="rounded-large border border-border bg-card p-6 shadow-pop">
+      <Card className="p-6 shadow-pop">
         <div className="mb-6 flex flex-col items-center gap-3 text-center">
           <img src="/brand/mark.svg" alt={brand.name} className="h-14 w-14" />
           <div>
@@ -57,51 +58,43 @@ export function LoginPage() {
             <p className="text-sm text-text-muted">Acesso restrito à equipe.</p>
           </div>
         </div>
-      {step === 'request' ? (
-        <form onSubmit={onRequest} className="space-y-4">
-          <input
-            type="email"
-            required
-            value={destination}
-            onChange={(e) => setDestination(e.target.value)}
-            placeholder="email@orcalink.com.br"
-            className="w-full rounded-md border border-border bg-bg px-3 py-2"
-          />
-          {error && <p className="text-sm text-danger">{error}</p>}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-md bg-brand px-4 py-2.5 font-medium text-white disabled:opacity-50"
-          >
-            {loading ? 'Enviando…' : 'Receber código'}
-          </button>
-        </form>
-      ) : (
-        <form onSubmit={onVerify} className="space-y-4">
-          {devCode && (
-            <p className="rounded-md bg-card px-3 py-2 text-xs text-text-muted">
-              Modo dev — código: <strong>{devCode}</strong>
-            </p>
-          )}
-          <input
-            inputMode="numeric"
-            required
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            placeholder="Código de 6 dígitos"
-            className="w-full rounded-md border border-border bg-bg px-3 py-2 tracking-widest"
-          />
-          {error && <p className="text-sm text-danger">{error}</p>}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-md bg-brand px-4 py-2.5 font-medium text-white disabled:opacity-50"
-          >
-            {loading ? 'Entrando…' : 'Entrar'}
-          </button>
-        </form>
-      )}
-      </div>
+
+        {step === 'request' ? (
+          <form onSubmit={onRequest} className="space-y-4">
+            <Input
+              type="email"
+              required
+              value={destination}
+              onChange={(e) => setDestination(e.target.value)}
+              placeholder="email@orcalink.com.br"
+            />
+            <InlineError message={error} />
+            <Button type="submit" full loading={loading}>
+              Receber código
+            </Button>
+          </form>
+        ) : (
+          <form onSubmit={onVerify} className="space-y-4">
+            {devCode && (
+              <p className="rounded-medium bg-card-2 px-3 py-2 text-xs text-text-muted">
+                Modo dev — código: <strong>{devCode}</strong>
+              </p>
+            )}
+            <Input
+              inputMode="numeric"
+              required
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              placeholder="Código de 6 dígitos"
+              className="tracking-widest"
+            />
+            <InlineError message={error} />
+            <Button type="submit" full loading={loading}>
+              Entrar
+            </Button>
+          </form>
+        )}
+      </Card>
     </div>
   );
 }

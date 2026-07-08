@@ -1,83 +1,127 @@
+import { LuDownload } from 'react-icons/lu';
 import { useMetrics, usePayments } from '../../lib/queries';
 import { formatBRL } from '../../lib/format';
+import type { AdminPayment } from '../../lib/types';
+import {
+  PageHeader,
+  StatCard,
+  Button,
+  Badge,
+  paymentStatusTone,
+  Table,
+  THead,
+  TBody,
+  TR,
+  TH,
+  TD,
+  EmptyRow,
+  Spinner,
+  ErrorState,
+} from '../../components/ui';
 
-function Card({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-lg border border-border bg-card p-4">
-      <p className="text-xl font-bold">{value}</p>
-      <p className="text-sm text-text-muted">{label}</p>
-    </div>
+function toCsv(rows: AdminPayment[]): string {
+  const header = ['Cliente', 'Profissional', 'Categoria', 'Modo', 'Prestador', 'Liquido', 'Cliente', 'Receita', 'Lucro', 'Status', 'Data'];
+  const body = rows.map((p) =>
+    [
+      p.clientName,
+      p.providerName ?? '',
+      p.categoryName,
+      p.mode,
+      (p.providerAmountCents / 100).toFixed(2),
+      (p.providerNetCents / 100).toFixed(2),
+      (p.clientTotalCents / 100).toFixed(2),
+      (p.grossRevenueCents / 100).toFixed(2),
+      (p.netProfitCents / 100).toFixed(2),
+      p.status,
+      new Date(p.createdAt).toLocaleDateString('pt-BR'),
+    ]
+      .map((v) => `"${String(v).replace(/"/g, '""')}"`)
+      .join(','),
   );
+  return [header.join(','), ...body].join('\n');
+}
+
+function downloadCsv(rows: AdminPayment[]) {
+  const blob = new Blob(['﻿' + toCsv(rows)], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `orcalink-pagamentos-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 export function FinancePage() {
   const metricsQ = useMetrics();
   const paymentsQ = usePayments();
+  const m = metricsQ.data;
+  const takeRate = m && m.gmvCents > 0 ? (m.grossRevenueCents / m.gmvCents) * 100 : 0;
+  const ticket = m && m.paidCount > 0 ? Math.round(m.gmvCents / m.paidCount) : 0;
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-semibold">Financeiro</h1>
+      <PageHeader
+        title="Financeiro"
+        subtitle="GMV, receita, repasses e conciliação de pagamentos."
+        action={
+          paymentsQ.data && paymentsQ.data.length > 0 ? (
+            <Button variant="secondary" size="sm" startContent={<LuDownload size={15} />} onClick={() => downloadCsv(paymentsQ.data!)}>
+              Exportar CSV
+            </Button>
+          ) : undefined
+        }
+      />
 
-      {metricsQ.data && (
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-          <Card label="GMV (pago + liberado)" value={formatBRL(metricsQ.data.gmvCents)} />
-          <Card label="Receita bruta (realizada)" value={formatBRL(metricsQ.data.grossRevenueCents)} />
-          <Card label="Lucro líquido (realizado)" value={formatBRL(metricsQ.data.netProfitCents)} />
+      {m && (
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+          <StatCard label="GMV" value={formatBRL(m.gmvCents)} sub="Pago + liberado" />
+          <StatCard label="Receita bruta" value={formatBRL(m.grossRevenueCents)} />
+          <StatCard label="Lucro líquido" value={formatBRL(m.netProfitCents)} tone="success" accent />
+          <StatCard label="Take rate" value={`${takeRate.toFixed(1)}%`} />
+          <StatCard label="Ticket médio" value={formatBRL(ticket)} sub={`${m.paidCount} pagos`} />
         </div>
       )}
 
       <div>
         <h2 className="mb-2 text-lg font-semibold">Pagamentos</h2>
-        {paymentsQ.isLoading && <p className="text-text-muted">Carregando…</p>}
-        {paymentsQ.isError && <p className="text-danger">{(paymentsQ.error as Error).message}</p>}
+        {paymentsQ.isLoading && <Spinner />}
+        {paymentsQ.isError && <ErrorState message={(paymentsQ.error as Error).message} />}
         {paymentsQ.data && (
-          <div className="overflow-x-auto rounded-lg border border-border">
-            <table className="w-full text-sm">
-              <thead className="bg-card text-left text-text-muted">
-                <tr>
-                  <th className="px-3 py-2">Cliente</th>
-                  <th className="px-3 py-2">Profissional</th>
-                  <th className="px-3 py-2">Categoria</th>
-                  <th className="px-3 py-2">Modo</th>
-                  <th className="px-3 py-2 text-right">Prestador</th>
-                  <th className="px-3 py-2 text-right">Líquido</th>
-                  <th className="px-3 py-2 text-right">Cliente</th>
-                  <th className="px-3 py-2 text-right">Receita</th>
-                  <th className="px-3 py-2 text-right">Lucro</th>
-                  <th className="px-3 py-2">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {paymentsQ.data.map((p) => (
-                  <tr key={p.id}>
-                    <td className="px-3 py-2">{p.clientName}</td>
-                    <td className="px-3 py-2">{p.providerName ?? '—'}</td>
-                    <td className="px-3 py-2 text-text-muted">{p.categoryName}</td>
-                    <td className="px-3 py-2 text-text-muted">{p.mode}</td>
-                    <td className="px-3 py-2 text-right">{formatBRL(p.providerAmountCents)}</td>
-                    <td className="px-3 py-2 text-right">{formatBRL(p.providerNetCents)}</td>
-                    <td className="px-3 py-2 text-right font-medium">{formatBRL(p.clientTotalCents)}</td>
-                    <td className="px-3 py-2 text-right text-brand">{formatBRL(p.grossRevenueCents)}</td>
-                    <td className="px-3 py-2 text-right font-semibold text-status-finished">
-                      {formatBRL(p.netProfitCents)}
-                    </td>
-                    <td className="px-3 py-2">
-                      <span className="rounded bg-status-canceled px-2 py-0.5 text-xs text-white">
-                        {p.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-                {paymentsQ.data.length === 0 && (
-                  <tr>
-                    <td colSpan={10} className="px-3 py-4 text-center text-text-muted">
-                      Nenhum pagamento ainda.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+          <Table>
+            <THead>
+              <TR>
+                <TH>Cliente</TH>
+                <TH>Profissional</TH>
+                <TH>Categoria</TH>
+                <TH>Modo</TH>
+                <TH className="text-right">Prestador</TH>
+                <TH className="text-right">Líquido</TH>
+                <TH className="text-right">Cliente</TH>
+                <TH className="text-right">Receita</TH>
+                <TH className="text-right">Lucro</TH>
+                <TH>Status</TH>
+              </TR>
+            </THead>
+            <TBody>
+              {paymentsQ.data.map((p) => (
+                <TR key={p.id}>
+                  <TD>{p.clientName}</TD>
+                  <TD>{p.providerName ?? '—'}</TD>
+                  <TD className="text-text-muted">{p.categoryName}</TD>
+                  <TD className="text-text-muted">{p.mode}</TD>
+                  <TD className="text-right">{formatBRL(p.providerAmountCents)}</TD>
+                  <TD className="text-right">{formatBRL(p.providerNetCents)}</TD>
+                  <TD className="text-right font-medium">{formatBRL(p.clientTotalCents)}</TD>
+                  <TD className="text-right text-primary">{formatBRL(p.grossRevenueCents)}</TD>
+                  <TD className="text-right font-semibold text-status-finished">{formatBRL(p.netProfitCents)}</TD>
+                  <TD>
+                    <Badge tone={paymentStatusTone(p.status)}>{p.status}</Badge>
+                  </TD>
+                </TR>
+              ))}
+              {paymentsQ.data.length === 0 && <EmptyRow colSpan={10}>Nenhum pagamento ainda.</EmptyRow>}
+            </TBody>
+          </Table>
         )}
       </div>
     </div>
