@@ -193,3 +193,19 @@ export interface Paginated<T> {
   page: number;
   pageSize: number;
 }
+
+/** Documento legal (CMS) — visão admin com todas as versões. */
+export interface AdminLegalDoc {
+  id: string;
+  slug: string;
+  version: string;
+  title: string;
+  audience: string; // ALL | CLIENT | PROVIDER
+  summary: string | null;
+  contentHtml: string;
+  requiresAcceptance: boolean;
+  isPublished: boolean;
+  publishedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}

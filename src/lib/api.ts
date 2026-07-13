@@ -1,5 +1,6 @@
 import type {
   AdminPayment,
+  AdminLegalDoc,
   AdminQuoteDetail,
   AdminQuoteListItem,
   AdminUser,
@@ -195,6 +196,37 @@ export const api = {
   },
   getQuote(id: string) {
     return request<AdminQuoteDetail>(`/admin/quotes/${id}`);
+  },
+  // Documentos legais (CMS)
+  listLegal() {
+    return request<AdminLegalDoc[]>('/admin/legal');
+  },
+  createLegal(data: {
+    slug: string;
+    version: string;
+    title: string;
+    audience?: string;
+    contentHtml: string;
+    summary?: string;
+    requiresAcceptance?: boolean;
+  }) {
+    return request<AdminLegalDoc>('/admin/legal', body('POST', data));
+  },
+  updateLegal(
+    id: string,
+    data: Partial<{
+      title: string;
+      audience: string;
+      contentHtml: string;
+      summary: string;
+      requiresAcceptance: boolean;
+      version: string;
+    }>,
+  ) {
+    return request<AdminLegalDoc>(`/admin/legal/${id}`, body('PATCH', data));
+  },
+  publishLegal(id: string) {
+    return request<AdminLegalDoc>(`/admin/legal/${id}/publish`, body('POST', {}));
   },
   // Usuários (paginado no servidor)
   listUsers(input?: { q?: string; role?: string; page?: number; pageSize?: number }) {

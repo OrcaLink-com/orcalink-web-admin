@@ -10,6 +10,7 @@ export const queryKeys = {
   reviews: ['reviews'] as const,
   quotes: ['quotes'] as const,
   quote: (id: string) => ['quote', id] as const,
+  legal: ['legal'] as const,
   users: (q?: string, role?: string, page?: number) => ['users', q ?? '', role ?? '', page ?? 1] as const,
   contacts: (status?: string, category?: string, q?: string) =>
     ['contacts', status ?? '', category ?? '', q ?? ''] as const,
@@ -144,6 +145,21 @@ export function useCategoryMutation<TArgs>(fn: (args: TArgs) => Promise<unknown>
     mutationFn: fn,
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: queryKeys.categories });
+    },
+  });
+}
+
+// ───────── Documentos legais (CMS) ─────────
+export function useLegalDocs() {
+  return useQuery({ queryKey: queryKeys.legal, queryFn: api.listLegal });
+}
+
+export function useLegalMutation<TArgs>(fn: (args: TArgs) => Promise<unknown>) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: fn,
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.legal });
     },
   });
 }

@@ -11,6 +11,7 @@ import {
   LuStar,
   LuMessageSquare,
   LuGavel,
+  LuScale,
   LuLogOut,
 } from 'react-icons/lu';
 import { useAuth } from '../auth/AuthContext';
@@ -26,6 +27,7 @@ const NAV = [
   { to: '/avaliacoes', label: 'Avaliações', icon: <LuStar size={19} /> },
   { to: '/mediacoes', label: 'Mediações', icon: <LuGavel size={19} />, badgeKey: 'mediations' as const },
   { to: '/contatos', label: 'Contatos', icon: <LuMessageSquare size={19} />, badgeKey: 'contacts' as const },
+  { to: '/legal', label: 'Documentos legais', icon: <LuScale size={19} /> },
 ];
 
 export function Layout() {
