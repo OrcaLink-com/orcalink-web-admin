@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { brand } from '@orcalink/design-tokens/brand.config';
 import { useAuth } from '../../auth/AuthContext';
 import { Card, Input, Button, InlineError } from '../../components/ui';
@@ -11,6 +11,11 @@ export function LoginPage() {
   const [devCode, setDevCode] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Limpa o erro assim que o usuário edita o e-mail/código.
+  useEffect(() => {
+    setError(null);
+  }, [destination, code]);
 
   async function onRequest(e: React.FormEvent) {
     e.preventDefault();

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { LuTicket } from 'react-icons/lu';
 import {
   useApproveProvider,
@@ -163,6 +163,11 @@ function InviteCreator() {
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Limpa o erro assim que o usuário edita o e-mail.
+  useEffect(() => {
+    setError(null);
+  }, [email]);
 
   async function onCreate(e: React.FormEvent) {
     e.preventDefault();

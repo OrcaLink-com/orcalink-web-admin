@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useCategories, useCategoryMutation } from '../../lib/queries';
 import { api } from '../../lib/api';
 import type { Category } from '../../lib/types';
@@ -114,6 +114,11 @@ function CategoryCreator() {
   const [iconKey, setIconKey] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const create = useCategoryMutation((args: { slug: string; name: string; iconKey?: string }) => api.createCategory(args));
+
+  // Limpa o erro assim que o usuário edita nome/slug.
+  useEffect(() => {
+    setError(null);
+  }, [name, slug]);
 
   async function onCreate(e: React.FormEvent) {
     e.preventDefault();
