@@ -185,3 +185,11 @@ export interface AdminUser {
   providerStatus: string | null;
   createdAt: string;
 }
+
+/** Envelope de resposta paginada (server-side). */
+export interface Paginated<T> {
+  items: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+}

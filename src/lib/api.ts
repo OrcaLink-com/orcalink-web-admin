@@ -12,6 +12,7 @@ import type {
   Mediation,
   Metrics,
   OtpChannel,
+  Paginated,
   ProviderItem,
   ProviderStatus,
   Review,
@@ -195,13 +196,15 @@ export const api = {
   getQuote(id: string) {
     return request<AdminQuoteDetail>(`/admin/quotes/${id}`);
   },
-  // Usuários
-  listUsers(input?: { q?: string; role?: string }) {
+  // Usuários (paginado no servidor)
+  listUsers(input?: { q?: string; role?: string; page?: number; pageSize?: number }) {
     const qs = new URLSearchParams();
     if (input?.q) qs.set('q', input.q);
     if (input?.role) qs.set('role', input.role);
+    if (input?.page) qs.set('page', String(input.page));
+    if (input?.pageSize) qs.set('pageSize', String(input.pageSize));
     const s = qs.toString();
-    return request<AdminUser[]>(`/admin/users${s ? `?${s}` : ''}`);
+    return request<Paginated<AdminUser>>(`/admin/users${s ? `?${s}` : ''}`);
   },
   updateUserRole(id: string, role: 'CLIENT' | 'PROVIDER' | 'ADMIN') {
     return request<AdminUser>(`/admin/users/${id}/role`, body('PATCH', { role }));

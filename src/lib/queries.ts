@@ -10,7 +10,7 @@ export const queryKeys = {
   reviews: ['reviews'] as const,
   quotes: ['quotes'] as const,
   quote: (id: string) => ['quote', id] as const,
-  users: (q?: string, role?: string) => ['users', q ?? '', role ?? ''] as const,
+  users: (q?: string, role?: string, page?: number) => ['users', q ?? '', role ?? '', page ?? 1] as const,
   contacts: (status?: string, category?: string, q?: string) =>
     ['contacts', status ?? '', category ?? '', q ?? ''] as const,
 };
@@ -47,10 +47,11 @@ export function useUpdateContact() {
   });
 }
 
-export function useUsers(input: { q?: string; role?: string }) {
+export function useUsers(input: { q?: string; role?: string; page?: number; pageSize?: number }) {
   return useQuery({
-    queryKey: queryKeys.users(input.q, input.role),
+    queryKey: queryKeys.users(input.q, input.role, input.page),
     queryFn: () => api.listUsers(input),
+    placeholderData: (prev) => prev, // mantém a lista ao trocar de página (sem "flash")
   });
 }
 

@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useUsers, useUpdateUserRole } from '../../lib/queries';
 import { useAuth } from '../../auth/AuthContext';
 import type { AdminUser, Role } from '../../lib/types';
 import {
   PageHeader,
+  Button,
   Card,
   Input,
   Select,
@@ -14,6 +15,8 @@ import {
   EmptyState,
   InlineError,
 } from '../../components/ui';
+
+const PAGE_SIZE = 20;
 
 const ROLE_META: Record<Role, { label: string; className: string }> = {
   CLIENT: { label: 'Cliente', className: 'bg-card-2 text-text-muted' },
@@ -36,24 +39,24 @@ export function UsersPage() {
   const [q, setQ] = useState('');
   const [debouncedQ, setDebouncedQ] = useState('');
   const [role, setRole] = useState<'' | Role>('');
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQ(q), 300);
     return () => clearTimeout(t);
   }, [q]);
 
+  // Ao mudar busca ou filtro, volta para a 1ª página.
+  useEffect(() => setPage(1), [debouncedQ, role]);
+
   const { data, isLoading, isError, error } = useUsers({
     q: debouncedQ || undefined,
     role: role || undefined,
+    page,
+    pageSize: PAGE_SIZE,
   });
 
-  const counts = useMemo(() => {
-    const list = data ?? [];
-    return {
-      total: list.length,
-      admins: list.filter((u) => u.role === 'ADMIN' || u.role === 'SUPER_ADMIN').length,
-    };
-  }, [data]);
+  const totalPages = data ? Math.max(1, Math.ceil(data.total / data.pageSize)) : 1;
 
   return (
     <div className="space-y-5">
@@ -77,14 +80,37 @@ export function UsersPage() {
       {data && (
         <>
           <p className="text-xs text-text-muted">
-            {counts.total} usuário(s) · {counts.admins} com acesso admin
+            {data.total} usuário(s){data.total > 0 && ` · página ${data.page} de ${totalPages}`}
           </p>
           <div className="grid gap-3 lg:grid-cols-2">
-            {data.map((u) => (
+            {data.items.map((u) => (
               <UserCard key={u.id} user={u} canManage={canManage} isSelf={u.id === user?.id} />
             ))}
           </div>
-          {data.length === 0 && <EmptyState title="Nenhum usuário encontrado." />}
+          {data.items.length === 0 && <EmptyState title="Nenhum usuário encontrado." />}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-3 pt-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={data.page <= 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+              >
+                Anterior
+              </Button>
+              <span className="text-xs text-text-muted">
+                {data.page} / {totalPages}
+              </span>
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={data.page >= totalPages}
+                onClick={() => setPage((p) => p + 1)}
+              >
+                Próxima
+              </Button>
+            </div>
+          )}
         </>
       )}
     </div>
