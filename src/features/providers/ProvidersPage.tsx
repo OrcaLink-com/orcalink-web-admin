@@ -51,7 +51,10 @@ export function ProvidersPage() {
 
   return (
     <div className="space-y-5">
-      <PageHeader title="Prestadores" subtitle="Curadoria, comissão e recebedor no gateway." />
+      <PageHeader
+        title="Prestadores"
+        subtitle="Curadoria, comissão e recebedor no gateway. A subconta (recebedor) é criada pelo sistema no botão “Criar” — não há cadastro manual no Asaas."
+      />
 
       <InviteCreator />
 
@@ -129,15 +132,21 @@ function ProviderRow({ provider }: { provider: ProviderItem }) {
         {provider.asaasWalletId ? (
           <Badge tone="success">ativo</Badge>
         ) : (
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => recebedor.mutate(provider.id)}
-            loading={recebedor.isPending}
-            disabled={provider.status !== 'APPROVED'}
-          >
-            Criar
-          </Button>
+          <div className="space-y-1">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => recebedor.mutate(provider.id)}
+              loading={recebedor.isPending}
+              disabled={provider.status !== 'APPROVED'}
+              title="Cria a subconta do prestador no gateway (Asaas) via sistema — nada é feito manualmente."
+            >
+              Criar
+            </Button>
+            {recebedor.isError && (
+              <p className="max-w-52 text-xs text-danger">{(recebedor.error as Error).message}</p>
+            )}
+          </div>
         )}
       </TD>
       <TD>
